@@ -1,0 +1,1 @@
+Machine graphics qt projects
