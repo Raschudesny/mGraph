@@ -155,22 +155,24 @@ int main(int argc, char *argv[])
     //грузим картинку
     QImage img1;
     //img1.load("../../rose1.jpg");
-    img1.load("../../barb.png");
+    //img1.load("../../barb.png");
 
-    //img1.load("../../lena.png");
+    img1.load("../../lena.png");
 
     //rescale all images
     QSize size1 = img1.size();
 
     vector<int> hist = makeHisto(img1);
+
+    freopen( "out.txt", "wa", stdout);
     for(int  i: hist)
         cout << i << ", ";
     cout << endl;
 
     vector<double> distrib = makeDistr(hist, img1.size().width() * img1.size().height());
-    for(double  i: distrib)
-        cout << i << ", ";
-    cout << endl;
+    //for(double  i: distrib)
+    //    cout << i << ", ";
+    //cout << endl;
 
     double Average = 0.0;
     for(int i = 0; i < distrib.size(); i++)
@@ -199,8 +201,8 @@ int main(int argc, char *argv[])
     cout << "Average = " << Average << endl;
     cout << "Disp = " << Disp << endl;
     cout << "S K O  = " << sqrt(Disp) << endl;
-    cout <<" Assim = " << Assim << endl;
-    cout <<" Eks = " << Eks  << endl;
+    cout << "Assim = " << Assim << endl;
+    cout << "Eks = " << Eks  << endl;
     cout << "Energy = " << Energy << endl;
     cout << "Entropia = " << Entropia << endl;
 
