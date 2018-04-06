@@ -4,3 +4,6 @@ second_prog/build*
 *.jpg
 *.jpeg
 gisto/*
+third_proj/rotate/*.autosave
+third_proj/rotate/*.user
+third_proj/build*
