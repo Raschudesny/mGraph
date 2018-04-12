@@ -143,6 +143,17 @@ void transpose(QImage& img)
 
 //############################# THIRD  PROJ PART
 
+unsigned char getNormalPixVal(QRgb pixel)
+{
+    return (unsigned char)pixel;
+}
+
+QRgb setUCharToQRGB(unsigned char val)
+{
+    QRgb result = (255 << 24)  + (val << 16) + (val << 8) + val;
+    return result;
+}
+
 template< typename T>
 vector<T> mult_vec_on_matr(vector<T> vec, double ** matr, int size1 , int size2)
 {
@@ -210,10 +221,10 @@ vector<int> findanglesXY(QImage im,double ** matr, int size1 , int size2 )
 
     //левый верхний
     //x
-    tempV[0] = 0;
+    tempV[0] = 0.0;
     //y
     tempV[1] = im.size().height();
-    tempV[2] = 1;
+    tempV[2] = 1.0;
 
     result = mult_vec_on_matr(tempV, matr, size1, size2);
     XV.push_back(result[0]);
@@ -221,10 +232,10 @@ vector<int> findanglesXY(QImage im,double ** matr, int size1 , int size2 )
 
     //левый нижний
     //x
-    tempV[0] = 0;
+    tempV[0] = 0.0;
     //y
-    tempV[1] = 0;
-    tempV[2] = 1;
+    tempV[1] = 0.0;
+    tempV[2] = 1.0;
 
     result = mult_vec_on_matr(tempV, matr, size1, size2);
     XV.push_back(result[0]);
@@ -235,7 +246,7 @@ vector<int> findanglesXY(QImage im,double ** matr, int size1 , int size2 )
     tempV[0] = im.size().width();
     //y
     tempV[1] = im.size().height();
-    tempV[2] = 1;
+    tempV[2] = 1.0;
 
     result = mult_vec_on_matr(tempV, matr, size1, size2);
     XV.push_back(result[0]);
@@ -245,8 +256,8 @@ vector<int> findanglesXY(QImage im,double ** matr, int size1 , int size2 )
     //x
     tempV[0] = im.size().width();
     //y
-    tempV[1] = 0;
-    tempV[2] = 1;
+    tempV[1] = 0.0;
+    tempV[2] = 1.0;
 
     result = mult_vec_on_matr(tempV, matr, size1, size2);
     XV.push_back(result[0]);
@@ -273,13 +284,88 @@ vector<double> calcOldCoords(int Y, int X , double ** matr, int Msize1 ,int Msiz
     tempV.resize(3);
 
     //x
-    tempV[0] = X;
+    tempV[0] = (double)X;
     //y
-    tempV[1] = Y;
-    tempV[2] = 1;
+    tempV[1] = (double)Y;
+    tempV[2] = (double)1;
 
     result = mult_vec_on_matr(tempV, matr, Msize1, Msize2);
     return result;
+
+}
+
+
+double K_func(double delta)
+{
+    double a = -1.0;
+    double absDelta = fabs(delta);
+    if(absDelta > 2.0)
+        return 0.0;
+    if(absDelta > 1.0 && absDelta <= 2.0)
+        return a * absDelta * absDelta * absDelta + 5.0 * absDelta * absDelta + 8.0 * a *absDelta - 4.0 * a;
+    if(absDelta >= 0 && absDelta <= 1.0)
+        return (a + 2.0) * absDelta * absDelta * absDelta - (a + 3.0) * absDelta * absDelta + 1.0;
+
+}
+
+
+QRgb  bicubicInterp(QImage img1, double x , double y)
+{
+    if(x > 130  && x < 131  && y > 130  && y < 131)
+        x = x + 1.0 - 1.0;
+    int size1 = img1.size().height();
+    int size2 = img1.size().width();
+    int ceilX = ceil(x);
+    int ceilY = ceil(y);
+    int floorX = floor(x);
+    int floorY = floor(y);
+    if(ceilX < 0 || ceilX >= size2)
+    {
+        QRgb temp = setPixel(0, 0, 0);
+        return temp;
+    }
+    if(ceilY < 0 || ceilY >= size1)
+    {
+        QRgb temp = setPixel(0, 0, 0);
+        return temp;
+    }
+    if(ceilX - 2 < 0  || ceilY - 2 < 0)
+    {
+        //QRgb temp = setPixel(0, 0, 0);
+        //return temp;
+        return img1.pixel(ceilX, ceilY);
+    }
+    if(ceilX + 1 >= size2 || ceilY + 1 >= size1)
+    {
+        //QRgb temp = setPixel(0, 0, 0);
+        //return temp;
+        return img1.pixel(ceilX, ceilY);
+    }
+
+    vector<double> values;
+    //         x - 2               x + 1
+    for(int i = floorY - 1; i <= ceilY + 1; i++)
+    {
+        double value = 0.0;
+        for(int j = floorX - 1; j <= ceilX + 1; j++)
+        {
+            unsigned char S = getNormalPixVal(img1.pixel(j, i));
+            double temp = K_func(x - (double)j);
+            value += temp * (double)S;
+        }
+        values.push_back(fabs(value));
+    }
+    double result = 0.0;
+    int counter = 0;
+    for(int i = floorY - 1; i <= ceilY + 1; i++)
+    {
+        double S = values[counter++];
+        double temp = K_func(y - (double)i);
+        result += S * temp;
+
+    }
+    result = fabs(result);
+    return setUCharToQRGB((unsigned char)result);
 
 }
 
@@ -298,22 +384,25 @@ int main(int argc, char *argv[])
     QGridLayout * qgl = new QGridLayout;
     window->setLayout(qgl);
 
-    char filename[256] = "../../lena.png";
-
+    char filename[256] = "../../barb.png";
+    //ЧИТАТЬ ОТСЮДА
     //грузим картинку
     QImage img1;
     //img1.load("../../rose1.jpg");
     //img1.load("../../barb.png");
 
     img1.load(filename);
+    img1 = img1.scaled(QSize(300, 300));
 
+    //задаем угол и матрицу
     //!!!!!!!!!!!!!!!!!!!!!!
-    double phi = -PI/4.0;
+    double phi = PI/4.0;
     double c = cos(phi);
     double s  = sin(phi);
     double ** matr = new double*[3];
     for(int i = 0; i < 3; i++)
         matr[i] = new double[3];
+
     matr[0][0] = c;
     matr[0][1] = s;
     matr[0][2] = 0;
@@ -322,8 +411,8 @@ int main(int argc, char *argv[])
     matr[1][2] = 0;
     matr[2][0] = 0;
     matr[2][1] = 0;
-    matr[2][2] = 1;
-
+    matr[2][2] = 1.0;
+    //равняем к 0 все что меньше 0.0000000001 и больше -0.0000000001
     toZero(matr, 3, 3);
 
     for(int i = 0; i < 3; i++)
@@ -339,7 +428,8 @@ int main(int argc, char *argv[])
     for(auto i : NewSizes)
         cout << i << " ";
     cout << endl;
-
+    //NewSizes[0]  -= 3;
+    //NewSizes[1]  -= 3;
     int newSizeX = NewSizes[2] - NewSizes[0];
     int newSizeY = NewSizes[3] - NewSizes[1];
     cout << newSizeX << endl;
@@ -349,6 +439,8 @@ int main(int argc, char *argv[])
     int Xshift = NewSizes[0];
     int Yshift = NewSizes[1];
 
+    cout << "SIFTS:" << endl;
+    cout << Xshift << " " << Yshift << endl;
     QImage newImg;
     newImg.load(filename);
 
@@ -368,31 +460,26 @@ int main(int argc, char *argv[])
         for(int j = 0; j < newImg.size().width(); j++)
         {
             QRgb temp;
-            int x, y;
+            if(i == 575 && j == 307)
+            {
+                i = i + 1 - 1;
+                j = j + 1;
+                j = j - 1;
+            }
             vector<double> res = calcOldCoords(i + Yshift, j + Xshift, matr, 3, 3);
-            x =(int) (res[0] + 0.5);
-            y =(int) (res[1] + 0.5);
-          //  cout << ";(" << x << "," << y << ")";
-            if(x < 0 || x >= img1.size().width())
-            {
-                temp = setPixel(0, 0, 0);
-                newImg.setPixel(j, i, temp);
-                continue;
-            }
-            if(y < 0 || y >= img1.size().height())
-            {
-                temp = setPixel(0, 0, 0);
-                newImg.setPixel(j, i, temp);
-                continue;
-            }
-            temp  = img1.pixel(x, y);
+            temp = bicubicInterp(img1, res[0] , res[1]);
+            unsigned char ch = getNormalPixVal(temp);
+            if(ch == 255)
+                cout <<  i << " " << j << ";";
             newImg.setPixel(j, i, temp);
 
+
         }
-       // cout << endl;
+        cout << endl;
     }
 
-
+    newImg.save("newImg.bmp");
+//ЧИТАТЬ ДО СЮДА
 
     QPixmap px1 = QPixmap(QPixmap::fromImage(img1));
     QPixmap px2 = QPixmap(QPixmap::fromImage(newImg));
