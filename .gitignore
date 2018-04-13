@@ -7,3 +7,6 @@ gisto/*
 third_proj/rotate/*.autosave
 third_proj/rotate/*.user
 third_proj/build*
+
+fourth_proj/build*
+fourth_proj/error_propagation_proj/*.user
