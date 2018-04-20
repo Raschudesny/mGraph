@@ -373,17 +373,19 @@ QRgb  bicubicInterp(QImage img1, double x , double y)
 //###################################### PROJECT 4 #######################
 
 
-unsigned char add_pix_to_pix( int a,  int b)
+unsigned char add_pix_to_pix( unsigned char a,  double b)
 {
-    if(a + b  > 255)
+    int x = a;
+    int y = ceil(b);
+    if(x + y  > 255.0)
     {
          return 255;
     }
-    if(a +  b < 0)
+    if(x +  y < 0)
     {
         return 0;
     }
-    return a + b;
+    return x + y;
 }
 
 #define PI 3.141592653589793238462643
@@ -403,14 +405,14 @@ int main(int argc, char *argv[])
     char filename[256] = "../../lena.png";
     //грузим картинку
     QImage img1;
+    QImage newImg;
     //img1.load("../../rose1.jpg");
     //img1.load("../../barb.png");
 
     img1.load(filename);
-    QImage newImg;
     newImg.load(filename);
 
-    int N = 3;
+    int N = 2;
 
 
     for(int i = 0 ;  i < img1.height(); i++)
@@ -418,48 +420,51 @@ int main(int argc, char *argv[])
         {
             QRgb cur_pix = img1.pixel(j, i);
             unsigned char pix_val = getNormalPixVal(cur_pix);
-            int step = 255.0 / pow(2.0, (double)N) ;
-
-            //вот тут было раньше (pix_val /step) + 1 и тогда изображение не выглядело настолько убого при N = 1
-            //с тех пор единичка пропала и мы с моими братьями шамилем и камилем отправились её искать
-            //но после годов долгих скитаний по пустыне мы так и не смогли подобраться к истине и
-            //познать тайну пропавшей единички и понять нужна ли она вообще тут была
-            int result = step * ((pix_val /  step));
-            int err = result - pix_val;
+            unsigned char threshhold = (255 / N) ;
+            unsigned char result;
+            if(pix_val > threshhold)
+                result = 255;
+            else
+                result = 0;
+            int err =  pix_val - result;
             img1.setPixel(j, i, setUCharToQRGB(result));
+
             if(j + 1 < img1.width())
             {
                 QRgb temp_pix = img1.pixel(j  + 1, i);
                 unsigned char temp_val = getNormalPixVal(temp_pix);
-                double temp_res = (7.0/16.0) *(double)err;
-                temp_val = add_pix_to_pix(temp_val ,  (int)temp_res);
-                img1.setPixel( j + 1 , i , setUCharToQRGB(temp_val));
+                double temp_res = (7.0/16.0) * err;
+                unsigned char res_pix_val = add_pix_to_pix(temp_val ,  (double)temp_res);
+                img1.setPixel( j + 1 , i , setUCharToQRGB(res_pix_val));
             }
             if( j -  1 > 0 && i + 1 < img1.height())
             {
-                QRgb temp_pix = img1.pixel(j  - 1, i + 1);
+                QRgb temp_pix = img1.pixel(j  - 1 , i + 1);
                 unsigned char temp_val = getNormalPixVal(temp_pix);
-                double temp_res = (3.0/16.0) *(double)err;
-                temp_val = add_pix_to_pix(temp_val , (int)temp_res);
-                img1.setPixel( j - 1, i + 1 , setUCharToQRGB(temp_val));
+                double temp_res = (3.0/16.0) * err;
+                unsigned char res_pix_val = add_pix_to_pix(temp_val ,  (double)temp_res);
+                img1.setPixel( j - 1 , i + 1, setUCharToQRGB(res_pix_val));
             }
             if( i + 1  < img1.height())
             {
                 QRgb temp_pix = img1.pixel(j, i + 1);
                 unsigned char temp_val = getNormalPixVal(temp_pix);
-                double temp_res = (5.0/16.0) *(double)err;
-                temp_val = add_pix_to_pix(temp_val , (int)temp_res);
-                img1.setPixel( j , i + 1 , setUCharToQRGB(temp_val));
+                double temp_res = (5.0/16.0) * err;
+                unsigned char res_pix_val = add_pix_to_pix(temp_val ,  (double)temp_res);
+                img1.setPixel( j , i + 1, setUCharToQRGB(res_pix_val));
+
             }
             if(i + 1  < img1.height() && j + 1  < img1.width())
             {
-                QRgb temp_pix = img1.pixel(j + 1, i + 1);
+                QRgb temp_pix = img1.pixel(j  + 1, i + 1);
                 unsigned char temp_val = getNormalPixVal(temp_pix);
-                double temp_res = (double)err - (5.0/16.0) *(double)err - (3.0/16.0) *(double)err - (7.0/16.0) *(double)err;
-                temp_val = add_pix_to_pix(temp_val , (int)temp_res);
-                img1.setPixel( j + 1 , i + 1 , setUCharToQRGB(temp_val));
-
+                //double temp_res = (1.0 / 16.0 ) * err;
+                double temp_res = err - (7.0/16.0) * err  -  (3.0/16.0) * err - (5.0/16.0) * err;
+                unsigned char res_pix_val = add_pix_to_pix(temp_val ,  (double)temp_res);
+                img1.setPixel( j + 1 , i + 1, setUCharToQRGB(res_pix_val));
             }
+
+
 
         }
 

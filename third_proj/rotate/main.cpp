@@ -311,8 +311,6 @@ double K_func(double delta)
 
 QRgb  bicubicInterp(QImage img1, double x , double y)
 {
-    if(x > 130  && x < 131  && y > 130  && y < 131)
-        x = x + 1.0 - 1.0;
     int size1 = img1.size().height();
     int size2 = img1.size().width();
     int ceilX = ceil(x);
@@ -384,7 +382,7 @@ int main(int argc, char *argv[])
     QGridLayout * qgl = new QGridLayout;
     window->setLayout(qgl);
 
-    char filename[256] = "../../barb.png";
+    char filename[256] = "../../lena.png";
     //ЧИТАТЬ ОТСЮДА
     //грузим картинку
     QImage img1;
@@ -392,7 +390,7 @@ int main(int argc, char *argv[])
     //img1.load("../../barb.png");
 
     img1.load(filename);
-    img1 = img1.scaled(QSize(300, 300));
+    img1 = img1.scaled(QSize(450, 450));
 
     //задаем угол и матрицу
     //!!!!!!!!!!!!!!!!!!!!!!
@@ -460,17 +458,11 @@ int main(int argc, char *argv[])
         for(int j = 0; j < newImg.size().width(); j++)
         {
             QRgb temp;
-            if(i == 575 && j == 307)
-            {
-                i = i + 1 - 1;
-                j = j + 1;
-                j = j - 1;
-            }
+
             vector<double> res = calcOldCoords(i + Yshift, j + Xshift, matr, 3, 3);
             temp = bicubicInterp(img1, res[0] , res[1]);
             unsigned char ch = getNormalPixVal(temp);
-            if(ch == 255)
-                cout <<  i << " " << j << ";";
+
             newImg.setPixel(j, i, temp);
 
 
@@ -479,7 +471,7 @@ int main(int argc, char *argv[])
     }
 
     newImg.save("newImg.bmp");
-//ЧИТАТЬ ДО СЮДА
+
 
     QPixmap px1 = QPixmap(QPixmap::fromImage(img1));
     QPixmap px2 = QPixmap(QPixmap::fromImage(newImg));
