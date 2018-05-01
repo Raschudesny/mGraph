@@ -377,7 +377,7 @@ unsigned char add_pix_to_pix( unsigned char a,  double b)
 {
     int x = a;
     int y = ceil(b);
-    if(x + y  > 255.0)
+    if(x + y  > 255)
     {
          return 255;
     }
@@ -387,6 +387,9 @@ unsigned char add_pix_to_pix( unsigned char a,  double b)
     }
     return x + y;
 }
+
+
+
 
 #define PI 3.141592653589793238462643
 
@@ -470,7 +473,7 @@ int main(int argc, char *argv[])
 
 
 
-
+   // img1 = img1.scaled(200, 200);
     QPixmap px1 = QPixmap(QPixmap::fromImage(newImg));
     QPixmap px2 = QPixmap(QPixmap::fromImage(img1));
     QLabel ql1, ql2;
