@@ -10,3 +10,7 @@ third_proj/build*
 
 fourth_proj/build*
 fourth_proj/error_propagation_proj/*.user
+
+
+fifth_proj/build*
+sixth_proj/build*
