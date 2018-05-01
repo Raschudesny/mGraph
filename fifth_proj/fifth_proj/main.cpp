@@ -429,29 +429,42 @@ QImage& makeConvoluton( QImage &img1, QImage &img2, double ** krnl , int ksize1,
 {
     int halfY = ksize1 / 2;
     int halfX = ksize2 / 2;
+    int oddX =  ksize2 % 2;
+    int oddY =  ksize1 % 2;
 
-    img2 = img2.scaled(img1.width() - 2 * halfX, img1.height() - 2 *halfY);
-    
-    for(int i = halfY, indxY = 0 ;  i < img1.height() - halfY - 1; i++, indxY++)
-        for(int j = halfX, indxX = 0; j < img1.width() - halfX - 1; j++, indxX++)
+
+
+    for(int i = 0; i < img1.height(); i++)
+        for(int j = 0 ; j < img1.width(); j++)
         {
             double sum = 0.0;
             for(int k = 0; k < ksize1; k++)
                 for(int l = 0; l < ksize2; l++)
                 {
-
-                    QRgb cur_pix = img1.pixel(j + l,i + k);
-                    unsigned char pix_val = getNormalPixVal(cur_pix);
-                    sum += pix_val * krnl[k][l];
-
+                    int real_indxX = j + l - halfX;
+                    int real_indxY = i + k - halfY;
+                    unsigned char pix_val;
+                    if(real_indxX >= img1.width() || real_indxX < 0 || real_indxY < 0 || real_indxY >= img1.height())
+                        continue;
+                    else
+                    {
+                        QRgb cur_pix = img1.pixel(real_indxX, real_indxY);
+                        pix_val = getNormalPixVal(cur_pix);
+                        sum += pix_val * krnl[k][l];
+                    }
                 }
             if(sum > 255)
                 sum = 255;
             if(sum < 0)
                 sum = 0;
             unsigned char result = sum;
-            img2.setPixel(indxX, indxY, setUCharToQRGB(result));
+            img2.setPixel(j, i, setUCharToQRGB(result));
+
         }
+    
+
+
+
     return img2;
 }
 
@@ -471,8 +484,8 @@ int main(int argc, char *argv[])
     QGridLayout * qgl = new QGridLayout;
     window->setLayout(qgl);
 
-    char filename[256] = "../../barb.png";
-    char kernelFilename[256] = "../../kernel.txt";
+    char filename[256] = "../barb.png";
+    char kernelFilename[256] = "../kernel.txt";
 
     //грузим картинку
     QImage img1;

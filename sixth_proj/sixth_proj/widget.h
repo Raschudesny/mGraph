@@ -3,13 +3,28 @@
 
 #include <QWidget>
 
-class Widget : public QWidget
+class NotMyWindow : public QWidget
 {
     Q_OBJECT
 
 public:
-    Widget(QWidget *parent = 0);
-    ~Widget();
+    NotMyWindow(QWidget *parent = 0);
+    ~NotMyWindow();
+
+signals:
+    void startMWindow();
+    void startSubWindow();
+    void startReflVWindow();
+    void startReflBWindow();
+    void startTranspWindow();
+
+public slots:
+    void buttonClick1();
+    void buttonClick2();
+    void buttonClick3();
+    void buttonClick4();
+    void buttonClick5();
+    void startWindow();
 };
 
 #endif // WIDGET_H
