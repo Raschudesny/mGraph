@@ -471,8 +471,8 @@ int main(int argc, char *argv[])
     QGridLayout * qgl = new QGridLayout;
     window->setLayout(qgl);
 
-    char filename[256] = "../barb.png";
-    char kernelFilename[256] = "../kernel.txt";
+    char filename[256] = "../../barb.png";
+    char kernelFilename[256] = "../../kernel.txt";
 
     //грузим картинку
     QImage img1;
