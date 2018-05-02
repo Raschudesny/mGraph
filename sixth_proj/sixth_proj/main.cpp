@@ -514,22 +514,28 @@ QImage& makeRankFiltration( QImage &img1, QImage &img2, int ** aperture , int as
 
     img2 = img2.scaled(img1.width() - 2 * halfX, img1.height() - 2 *halfY);
 
-    for(int i = halfY, indxY = 0 ;  i < img1.height() - halfY - oddY; i++, indxY++)
-        for(int j = halfX, indxX = 0; j < img1.width() - halfX - oddX; j++, indxX++)
+
+    for(int i = 0; i < img1.height() - 2 * halfY ; i++)
+        for(int j = 0 ; j < img1.width() - 2 * halfX; j++)
         {
             v.clear();
             for(int k = 0; k < asize1; k++)
                 for(int l = 0; l < asize2; l++)
                 {
+                    int real_indxX = j + l;
+                    int real_indxY = i + k;
+
+
                     if(aperture[k][l] != 0)
                     {
-                        QRgb cur_pix = img1.pixel(j + l,i + k);
+                        QRgb cur_pix = img1.pixel(real_indxX,real_indxY);
                         unsigned char pix_val = getNormalPixVal(cur_pix);
                         v.push_back( pix_val);
                     }
                 }
+            std::sort(v.begin(), v.end());
             unsigned char result = v[rank - 1];
-            img2.setPixel(indxX, indxY, setUCharToQRGB(result));
+            img2.setPixel(j, i, setUCharToQRGB(result));
         }
 
     return img2;
@@ -567,7 +573,7 @@ int main(int argc, char *argv[])
 
     int ** aperture = NULL;
     int asize1, asize2;
-    int RANK = 1;
+    int RANK = 5;
 
     aperture = get_aperture(apertureFilename, &asize1, &asize2);
     newImg = makeRankFiltration(img1, newImg, aperture, asize1, asize2, RANK );
